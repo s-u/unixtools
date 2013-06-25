@@ -1,0 +1,9 @@
+Package: unixtools
+Version: 0.1-1
+Title: Interface to various system-level facilities in unix
+Author: Simon Urbanek <Simon.Urbanek@r-project.org>
+Maintainer: Simon Urbanek <Simon.Urbanek@r-project.org>
+Depends: R (>= 2.11)
+Description: Interface to various system-level facilities in unix
+License: BSD
+URL: http://www.rforge.net/unixtools

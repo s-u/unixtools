@@ -30,3 +30,46 @@ SEXP C_setuser(SEXP sName, SEXP sGID) {
     }
     return ScalarLogical(1);
 }
+
+SEXP C_userinfo(SEXP sName) {
+    SEXP res;
+    struct passwd *p;
+    int pc = 1, n, i;
+    int *uid, *gid, *rn;
+    SEXP name, realname, home, shell;
+    if (TYPEOF(sName) == REALSXP) {
+	sName = PROTECT(coerceVector(sName, INTSXP));
+	pc++;
+    }
+    if (sName == R_NilValue) {
+	sName = PROTECT(ScalarInteger(getuid()));
+	pc++;
+    }
+    if (TYPEOF(sName) != STRSXP && TYPEOF(sName) != INTSXP)
+	Rf_error("user must be either a numeric vector, character vector or NULL");
+    n = LENGTH(sName);
+    res = PROTECT(mkNamed(VECSXP, (const char *[]) { "name", "uid", "gid", "realname", "home", "shell", "" }));
+    name     = SET_VECTOR_ELT(res, 0, allocVector(STRSXP, n));
+    uid      = INTEGER(SET_VECTOR_ELT(res, 1, allocVector(INTSXP, n)));
+    gid      = INTEGER(SET_VECTOR_ELT(res, 2, allocVector(INTSXP, n)));
+    realname = SET_VECTOR_ELT(res, 3, allocVector(STRSXP, n));
+    home     = SET_VECTOR_ELT(res, 4, allocVector(STRSXP, n));
+    shell    = SET_VECTOR_ELT(res, 5, allocVector(STRSXP, n));
+    for (i = 0; i < n; i++) {
+	if (TYPEOF(sName) == INTSXP && INTEGER(sName)[i] < 0)
+	    Rf_error("invalid user element %d - uids may not be negative or NA", i + 1);
+	if (TYPEOF(sName) == STRSXP && STRING_ELT(sName, i) == R_NaString)
+	    Rf_error("invalid user element %d - user names may not be NA", i + 1);
+	p = (TYPEOF(sName) == STRSXP) ? getpwnam(CHAR(STRING_ELT(sName, i))) : getpwuid(INTEGER(sName)[i]);
+	SET_STRING_ELT(name, i, (p && p->pw_name) ? mkChar(p->pw_name) : R_NaString);
+	uid[i] = p ? p->pw_uid : R_NaInt;
+	gid[i] = p ? p->pw_gid : R_NaInt;
+	SET_STRING_ELT(realname, i, (p && p->pw_gecos) ? mkChar(p->pw_gecos) : R_NaString);
+	SET_STRING_ELT(home, i, (p && p->pw_dir) ? mkChar(p->pw_dir) : R_NaString);
+	SET_STRING_ELT(shell, i, (p && p->pw_shell) ? mkChar(p->pw_shell) : R_NaString);
+    }
+    setAttrib(res, R_ClassSymbol, mkString("data.frame"));
+    setAttrib(res, R_RowNamesSymbol, sName);
+    UNPROTECT(pc);
+    return res;
+}

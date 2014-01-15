@@ -1,2 +1,2 @@
-useDynLib(unixtools, C_setuser, C_setTempDir, C_userinfo, C_chown)
-export(set.user, set.tempdir, user.info, chown)
+useDynLib(unixtools, C_setuser, C_setTempDir, C_userinfo, C_chown, C_stackinfo)
+export(set.user, set.tempdir, user.info, chown, stack.info)

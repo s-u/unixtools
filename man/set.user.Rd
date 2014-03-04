@@ -5,7 +5,7 @@
 }
 \description{
   \code{set.user} attempts to change the user running the current
-  process. Note that this is only possible if the process has teh
+  process. Note that this is only possible if the process has the
   privilege to do so.
 }
 \usage{
